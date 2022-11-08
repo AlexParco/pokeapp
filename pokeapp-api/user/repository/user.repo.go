@@ -3,16 +3,15 @@ package repository
 import (
 	"github.com/alexparco/pokeapp-api/database"
 	"github.com/alexparco/pokeapp-api/model"
-	"github.com/google/uuid"
 )
 
 type UserRepo interface {
 	Create(user *model.User) (*model.User, error)
 	Update(user *model.User) (*model.User, error)
-	Delete(userId uuid.UUID) error
-	GetUserById(userId uuid.UUID) (*model.User, error)
+	Delete(userId uint) error
+	GetUserById(userId uint) (*model.User, error)
 	GetUsers() ([]*model.User, error)
-	FindByEmail(user *model.User) (*model.User, error)
+	FindByUsername(user *model.User) (*model.User, error)
 }
 
 type userRepo struct {
@@ -24,14 +23,14 @@ func NewUserRepo(db *database.SqlClient) UserRepo {
 }
 
 func (u *userRepo) Create(user *model.User) (*model.User, error) {
-	stmt, err := u.db.Prepare("INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, 'user') RETURNING * ")
+	stmt, err := u.db.Prepare("INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING * ")
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
-	row := stmt.QueryRow(user.Username, user.Email, user.Password)
+	row := stmt.QueryRow(user.Username, user.Password, user.Role)
 	uUser := model.User{}
-	err = row.Scan(&uUser.UserId, &uUser.Username, &uUser.Email, &uUser.Password, &uUser.Role, &uUser.CreatedAt, &uUser.UpdatedAt)
+	err = row.Scan(&uUser.UserId, &uUser.Username, &uUser.Password, &uUser.Role)
 
 	if err != nil {
 		return nil, err
@@ -41,7 +40,7 @@ func (u *userRepo) Create(user *model.User) (*model.User, error) {
 }
 
 func (u *userRepo) Update(user *model.User) (*model.User, error) {
-	stmt, err := u.db.Prepare("UPDATE users SET username=$1, updated_at = CURRENT_TIMESTAMP WHERE user_id=$2 RETURNING *")
+	stmt, err := u.db.Prepare("UPDATE users SET username=$1 WHERE user_id=$2 RETURNING *")
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +48,7 @@ func (u *userRepo) Update(user *model.User) (*model.User, error) {
 	row := stmt.QueryRow(user.Username, user.UserId)
 
 	var uUser model.User
-	err = row.Scan(&uUser.UserId, &uUser.Username, &uUser.Email, &uUser.Password, &uUser.Role, &uUser.CreatedAt, &uUser.UpdatedAt)
+	err = row.Scan(&uUser.UserId, &uUser.Username, &uUser.Password, &uUser.Role)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +56,7 @@ func (u *userRepo) Update(user *model.User) (*model.User, error) {
 	return &uUser, nil
 }
 
-func (u *userRepo) Delete(userId uuid.UUID) error {
+func (u *userRepo) Delete(userId uint) error {
 	_, err := u.db.Exec("DELETE FROM users WHERE user_id=$1", userId)
 	if err != nil {
 		return err
@@ -65,10 +64,10 @@ func (u *userRepo) Delete(userId uuid.UUID) error {
 	return nil
 }
 
-func (u *userRepo) GetUserById(userId uuid.UUID) (*model.User, error) {
+func (u *userRepo) GetUserById(userId uint) (*model.User, error) {
 	var user model.User
 	row := u.db.QueryRow("SELECT * FROM users WHERE user_id=$1", userId)
-	err := row.Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+	err := row.Scan(&user.UserId, &user.Username, &user.Password, &user.Role)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +85,7 @@ func (u *userRepo) GetUsers() ([]*model.User, error) {
 
 	for rows.Next() {
 		var user model.User
-		if err := rows.Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.Role, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		if err := rows.Scan(&user.UserId, &user.Username, &user.Password, &user.Role); err != nil {
 			return nil, err
 		}
 		users = append(users, &user)
@@ -95,10 +94,10 @@ func (u *userRepo) GetUsers() ([]*model.User, error) {
 	return users, nil
 }
 
-func (u *userRepo) FindByEmail(user *model.User) (*model.User, error) {
-	row := u.db.QueryRow("SELECT * FROM users WHERE email=$1", user.Email)
+func (u *userRepo) FindByUsername(user *model.User) (*model.User, error) {
+	row := u.db.QueryRow("SELECT * FROM users WHERE username=$1", user.Username)
 	foundUser := model.User{}
-	err := row.Scan(&foundUser.UserId, &foundUser.Username, &foundUser.Email, &foundUser.Password, &foundUser.Role, &foundUser.CreatedAt, &foundUser.UpdatedAt)
+	err := row.Scan(&foundUser.UserId, &foundUser.Username, &foundUser.Password, &foundUser.Role)
 	if err != nil {
 		return nil, err
 	}

@@ -3,11 +3,11 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/alexparco/pokeapp-api/model"
 	"github.com/alexparco/pokeapp-api/user/services"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type UserController interface {
@@ -31,12 +31,13 @@ func NewUserController(service services.UserService) UserController {
 // @Router /user/{id} [GET]
 func (u *userController) Profile() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userId, err := uuid.Parse(c.Param("id"))
+
+		parseId, err := strconv.ParseUint(c.GetString("user_id"), 10, 32)
 		if err != nil {
-			c.AbortWithStatus(400)
+			c.AbortWithStatus(500)
 			return
 		}
-		user, err := u.service.GetById(userId)
+		user, err := u.service.GetById(uint(parseId))
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(404)
@@ -69,14 +70,12 @@ func (u *userController) GetUsers() gin.HandlerFunc {
 // @Router /auth [PATCH]
 func (u *userController) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.GetString("user_id")
 
-		userId, err := uuid.Parse(id)
+		userId, err := strconv.ParseUint(c.GetString("user_id"), 10, 32)
 		if err != nil {
-			c.AbortWithStatus(400)
+			c.AbortWithStatus(500)
 			return
 		}
-
 		var userUpt model.UserUpdate
 		if err := c.Bind(&userUpt); err != nil {
 			c.AbortWithStatus(404)
@@ -84,7 +83,7 @@ func (u *userController) Update() gin.HandlerFunc {
 		}
 
 		updateUser, err := u.service.Update(&model.User{
-			UserId:   userId,
+			UserId:   uint(userId),
 			Username: userUpt.Username,
 		})
 
@@ -106,13 +105,13 @@ func (u *userController) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetString("user_id")
 
-		userId, err := uuid.Parse(id)
+		parseId, err := strconv.ParseUint(id, 10, 32)
 		if err != nil {
-			c.AbortWithStatus(400)
+			c.AbortWithStatus(500)
 			return
 		}
 
-		if err := u.service.Delete(userId); err != nil {
+		if err := u.service.Delete(uint(parseId)); err != nil {
 			c.AbortWithStatus(404)
 			return
 		}

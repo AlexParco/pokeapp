@@ -17,8 +17,6 @@ func NewSqlClient(cfg *config.PostgresConfig) *SqlClient {
 	connStr := fmt.Sprintf("host=%s port=%v user=%s password=%s dbname=%s sslmode=disable", cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Dbname)
 
 	db, err := sql.Open("postgres", connStr)
-	fmt.Println(err)
-	fmt.Println(db)
 
 	if err != nil {
 		log.Printf("Database Connection: %v", err)

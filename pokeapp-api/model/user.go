@@ -1,30 +1,24 @@
 package model
 
 import (
-	"time"
-
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	UserId    uuid.UUID `json:"user_id"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	Role      string    `json:"role"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	UserId   uint   `json:"user_id"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 
 type UserLogin struct {
-	Email    string `json:"email"`
+	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
 type UserUpdate struct {
-	UserId   uuid.UUID `json:"user_id"`
-	Username string    `json:"username"`
+	UserId   uint   `json:"user_id"`
+	Username string `json:"username"`
 }
 
 func (u *User) HashPassword() error {

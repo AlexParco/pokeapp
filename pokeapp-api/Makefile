@@ -19,8 +19,8 @@ down:
 	
 
 migrate_down:
-	migrate -database "postgres://postgres:root@localhost:1234/app?sslmode=disable" -path migrations down 1
+	migrate -database "postgres://postgres:root@localhost:1234/pokeapp?sslmode=disable" -path migrations down 1
 
 migrate_up:
-	migrate -database "postgres://postgres:root@localhost:1234/app?sslmode=disable" -path migrations up 1
+	migrate -database "postgres://postgres:root@localhost:1234/pokeapp?sslmode=disable" -path migrations up 1
 

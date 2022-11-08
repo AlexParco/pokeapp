@@ -1,23 +1,24 @@
 DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS news CASCADE;
+DROP TABLE IF EXISTS comments CASCADE;
+DROP TABLE IF EXISTS pokefavs CASCADE;
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE users (
-  user_id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id SERIAL PRIMARY KEY,
   username VARCHAR(32) NOT NULL CHECK (username <> ''),
-  email VARCHAR(64) UNIQUE NOT NULL CHECK (email <> ''),
   password VARCHAR(250)  NOT NULL CHECK (octet_length(password) <> 0), 
-  role VARCHAR(10) NOT NULL DEFAULT 'user',
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  role VARCHAR(10) NOT NULL DEFAULT 'ROLE_USER'
 );
 
 CREATE TABLE comments (
-  comment_id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id uuid NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
-  pokemon_id iNT NOT NULL,
-  message VARCHAR(1024) NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  comment_id SERIAL PRIMARY KEY ,
+  body TEXT NOT NULL,
+  user_id INT NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
+  pokemon_id INT NOT NULL
+);
+
+CREATE TABLE pokefavs(
+  pokefav_id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
+  pokemon_id INT NOT NULL
 );

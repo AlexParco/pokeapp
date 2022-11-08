@@ -25,6 +25,7 @@ func (m *middleware) AuthSessionMiddleware() func(c *gin.Context) {
 		fmt.Println(bearer)
 		if bearer != "" {
 			token := strings.TrimPrefix(bearer, "Bearer ")
+			fmt.Println(token)
 			claims := m.jwtSesion.ValidateToken(token)
 			if claims == nil {
 				c.AbortWithStatus(401)
@@ -32,7 +33,6 @@ func (m *middleware) AuthSessionMiddleware() func(c *gin.Context) {
 			}
 
 			mapClaims := claims.Claims.(jwt.MapClaims)
-
 			c.Set("user_id", mapClaims["user_id"].(string))
 		}
 	}

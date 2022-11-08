@@ -4,10 +4,15 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/alexparco/pokeapp-api/middleware"
+
 	cmtController "github.com/alexparco/pokeapp-api/comment/controllers"
 	cmtRepo "github.com/alexparco/pokeapp-api/comment/repository"
 	cmtService "github.com/alexparco/pokeapp-api/comment/services"
-	"github.com/alexparco/pokeapp-api/middleware"
+
+	favController "github.com/alexparco/pokeapp-api/fav/controllers"
+	favRepo "github.com/alexparco/pokeapp-api/fav/repository"
+	favService "github.com/alexparco/pokeapp-api/fav/services"
 
 	userController "github.com/alexparco/pokeapp-api/user/controllers"
 	userRepo "github.com/alexparco/pokeapp-api/user/repository"
@@ -49,7 +54,7 @@ func (a *Api) Run() {
 func (a *Api) Handler() {
 
 	a.Router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
+		AllowOrigins:     []string{"http://localhost:5173"},
 		AllowMethods:     []string{"PATCH", "GET", "DELETE", "POST"},
 		AllowHeaders:     []string{"Authorization", "Content-Type", "X-Requested-With", "Credentials", "Origin"},
 		ExposeHeaders:    []string{"Content-Length", "credentials"},
@@ -60,7 +65,12 @@ func (a *Api) Handler() {
 	v1.GET("/hi", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"text": "hola mundo"})
 	})
+	// fav
+	fRepo := favRepo.NewFavRepo(a.Postgres)
+	fService := favService.NewFavService(fRepo)
+	fController := favController.NewFavController(fService)
 
+	// comment
 	cRepo := cmtRepo.NewCommentRepo(a.Postgres)
 	cService := cmtService.NewCommentService(cRepo)
 	cController := cmtController.NewCommentController(cService)
@@ -84,23 +94,29 @@ func (a *Api) Handler() {
 		auth.POST("/login", aController.Login())
 
 		comment := v1.Group("/comment")
-		comment.GET("/:id", cController.GetCommentById())
 		comment.GET("", cController.GetCommentsByPokeId())
 
 		user := v1.Group("/user")
 		user.GET("/", uController.GetUsers())
-		auth.GET("/:id", uController.Profile())
 
 		// auth user
 		auth.Use(m.AuthSessionMiddleware())
+		auth.GET("/profile", uController.Profile())
 		auth.PATCH("/", uController.Update())
 		auth.DELETE("/", uController.Delete())
 
 		// auth comments
 		comment.Use(m.AuthSessionMiddleware())
+		comment.POST("", cController.Create())
 		comment.PATCH("/:id", cController.UpdateMessage())
 		comment.DELETE("/:id", cController.Delete())
-		comment.POST("", cController.Create())
+
+		// auth favs
+		fav := v1.Group("/fav")
+		fav.Use(m.AuthSessionMiddleware())
+		fav.GET("/", fController.GetAllFavsByUserId())
+		fav.POST("/", fController.PostFav())
+		fav.DELETE("/:id", fController.DeleteFav())
 	}
 
 }

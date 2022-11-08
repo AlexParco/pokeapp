@@ -1,12 +1,12 @@
 package services
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/alexparco/pokeapp-api/model"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
 )
 
 type JwtService interface {
@@ -23,17 +23,17 @@ func NewJwtService(key string) JwtService {
 }
 
 type Claim struct {
-	Email  string    `json:"email"`
-	UserId uuid.UUID `json:"user_id"`
+	Username string `json:"username"`
+	UserId   string `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
 func (j *jwtService) GeneratedToken(user *model.User) (string, error) {
 	customClaims := Claim{
-		user.Email,
-		user.UserId,
+		user.Username,
+		strconv.FormatUint(uint64(user.UserId), 10),
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 		},
 	}
 

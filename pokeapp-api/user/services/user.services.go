@@ -5,15 +5,14 @@ import (
 
 	"github.com/alexparco/pokeapp-api/model"
 	"github.com/alexparco/pokeapp-api/user/repository"
-	"github.com/google/uuid"
 )
 
 type UserService interface {
 	Register(user *model.User) (*model.User, error)
 	Login(user *model.User) (*model.User, error)
 	Update(user *model.User) (*model.User, error)
-	Delete(userId uuid.UUID) error
-	GetById(userId uuid.UUID) (*model.User, error)
+	Delete(userId uint) error
+	GetById(userId uint) (*model.User, error)
 	GetUsers() ([]*model.User, error)
 }
 
@@ -26,7 +25,7 @@ func NewUserService(repo repository.UserRepo) UserService {
 }
 
 func (u *userService) Register(user *model.User) (*model.User, error) {
-	existsUser, err := u.repo.FindByEmail(user)
+	existsUser, err := u.repo.FindByUsername(user)
 	if err == nil || existsUser != nil {
 		return nil, errors.New("error email alredy exists")
 	}
@@ -43,7 +42,7 @@ func (u *userService) Register(user *model.User) (*model.User, error) {
 }
 
 func (u *userService) Login(user *model.User) (*model.User, error) {
-	foundUser, err := u.repo.FindByEmail(user)
+	foundUser, err := u.repo.FindByUsername(user)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +63,7 @@ func (u *userService) Update(user *model.User) (*model.User, error) {
 	return updateUser, nil
 }
 
-func (u *userService) Delete(userId uuid.UUID) error {
+func (u *userService) Delete(userId uint) error {
 	err := u.repo.Delete(userId)
 	if err != nil {
 		return nil
@@ -73,7 +72,7 @@ func (u *userService) Delete(userId uuid.UUID) error {
 	return nil
 }
 
-func (u *userService) GetById(userId uuid.UUID) (*model.User, error) {
+func (u *userService) GetById(userId uint) (*model.User, error) {
 	foundUser, err := u.repo.GetUserById(userId)
 	if err != nil {
 		return nil, err

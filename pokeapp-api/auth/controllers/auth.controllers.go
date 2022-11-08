@@ -41,6 +41,7 @@ func (a *authController) Register() gin.HandlerFunc {
 			c.AbortWithStatus(404)
 			return
 		}
+		fmt.Println(user.Username)
 
 		token, err := a.jwtService.GeneratedToken(createdUser)
 		if err != nil {
@@ -69,7 +70,7 @@ func (a *authController) Login() gin.HandlerFunc {
 		}
 
 		loginUser, err := a.authService.Login(&model.User{
-			Email:    userLogin.Email,
+			Username: userLogin.Username,
 			Password: userLogin.Password,
 		})
 		if err != nil {

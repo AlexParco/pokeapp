@@ -5,14 +5,13 @@ import (
 
 	"github.com/alexparco/pokeapp-api/model"
 	"github.com/alexparco/pokeapp-api/user/repository"
-	"github.com/google/uuid"
 )
 
 type AuthService interface {
 	Register(user *model.User) (*model.User, error)
 	Login(user *model.User) (*model.User, error)
 	Update(user *model.User) (*model.User, error)
-	Delete(userId uuid.UUID) error
+	Delete(userId uint) error
 }
 
 type authService struct {
@@ -24,9 +23,9 @@ func NewAuthService(repo repository.UserRepo) AuthService {
 }
 
 func (a *authService) Register(user *model.User) (*model.User, error) {
-	existsUser, err := a.repo.FindByEmail(user)
-	if err == nil || existsUser != nil {
-		return nil, errors.New("error email alredy exists")
+	foundUser, err := a.repo.FindByUsername(user)
+	if err == nil || foundUser != nil {
+		return nil, errors.New("error username alredy exists")
 	}
 
 	if err := user.HashPassword(); err != nil {
@@ -41,7 +40,7 @@ func (a *authService) Register(user *model.User) (*model.User, error) {
 }
 
 func (a *authService) Login(user *model.User) (*model.User, error) {
-	foundUser, err := a.repo.FindByEmail(user)
+	foundUser, err := a.repo.FindByUsername(user)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +61,7 @@ func (a *authService) Update(user *model.User) (*model.User, error) {
 	return updateUser, nil
 }
 
-func (a *authService) Delete(userId uuid.UUID) error {
+func (a *authService) Delete(userId uint) error {
 	err := a.repo.Delete(userId)
 	if err != nil {
 		return nil

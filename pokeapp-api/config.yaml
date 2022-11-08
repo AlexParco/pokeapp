@@ -7,6 +7,6 @@ server:
 postgres:
   host: database
   port: 5432
-  dbname: app
+  dbname: pokeapp
   user: postgres
   password: root
