@@ -14,7 +14,8 @@ CREATE TABLE comments (
   comment_id SERIAL PRIMARY KEY ,
   body TEXT NOT NULL,
   user_id INT NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
-  pokemon_id INT NOT NULL
+  pokemon_id INT NOT NULL,
+  created_at  	TIMESTAMP WITH TIME ZONE     NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE pokefavs(

@@ -22,17 +22,18 @@ func NewCommentRepo(db *database.SqlClient) CommentRepo {
 }
 
 func (c *commentRepo) Create(comment *model.Comment) (*model.Comment, error) {
-	stmt, err := c.Prepare("INSERT INTO comments (user_id, pokemon_id, body) VALUES ($1, $2, $3) RETURNING *")
+	var cmt model.Comment
+	stmt, err := c.Prepare("INSERT INTO comments (user_id, pokemon_id, body) VALUES ($1, $2, $3) RETURNING comment_id, body, user_id, pokemon_id")
 	if err != nil {
 		return nil, err
 	}
 
-	var cmt model.Comment
 	row := stmt.QueryRow(comment.UserId, comment.PokemonId, comment.Body)
 	err = row.Scan(&cmt.CommentId, &cmt.Body, &cmt.UserId, &cmt.PokemonId)
 	if err != nil {
 		return nil, err
 	}
+
 	return &cmt, nil
 
 }

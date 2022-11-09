@@ -50,7 +50,6 @@ func (cmt *commentController) Create() gin.HandlerFunc {
 
 		createComment, err := cmt.service.Create(&comment)
 		if err != nil {
-			fmt.Println(createComment)
 			c.AbortWithStatus(400)
 			return
 		}
