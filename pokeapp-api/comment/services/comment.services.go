@@ -8,10 +8,10 @@ import (
 )
 
 type CommentService interface {
-	Create(comment *model.Comment) (*model.Comment, error)
+	Create(comment *model.Comment) (*model.CommentPayload, error)
 	UpdateMessage(comment *model.Comment) (*model.Comment, error)
 	Delete(comment *model.Comment) error
-	GetCommentsByPokeId(pokeId uint) ([]*model.Comment, error)
+	GetCommentsByPokeId(pokeId uint) ([]*model.CommentPayload, error)
 }
 
 type commentService struct {
@@ -22,7 +22,7 @@ func NewCommentService(repo repository.CommentRepo) CommentService {
 	return &commentService{repo}
 }
 
-func (c *commentService) Create(comment *model.Comment) (*model.Comment, error) {
+func (c *commentService) Create(comment *model.Comment) (*model.CommentPayload, error) {
 	createUser, err := c.repo.Create(comment)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (c *commentService) Delete(comment *model.Comment) error {
 	return nil
 }
 
-func (c *commentService) GetCommentsByPokeId(pokeId uint) ([]*model.Comment, error) {
+func (c *commentService) GetCommentsByPokeId(pokeId uint) ([]*model.CommentPayload, error) {
 	comments, err := c.repo.GetCommentsById(pokeId)
 	if err != nil {
 		return nil, err

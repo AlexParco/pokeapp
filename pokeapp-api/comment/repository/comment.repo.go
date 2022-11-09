@@ -6,10 +6,10 @@ import (
 )
 
 type CommentRepo interface {
-	Create(comment *model.Comment) (*model.Comment, error)
+	Create(comment *model.Comment) (*model.CommentPayload, error)
 	UpdateMessage(comment *model.Comment) (*model.Comment, error)
 	Delete(comment *model.Comment) error
-	GetCommentsById(pokeId uint) ([]*model.Comment, error)
+	GetCommentsById(pokeId uint) ([]*model.CommentPayload, error)
 	ExistsByCommentId(commentId uint) bool
 }
 
@@ -21,15 +21,15 @@ func NewCommentRepo(db *database.SqlClient) CommentRepo {
 	return &commentRepo{db}
 }
 
-func (c *commentRepo) Create(comment *model.Comment) (*model.Comment, error) {
-	var cmt model.Comment
-	stmt, err := c.Prepare("INSERT INTO comments (user_id, pokemon_id, body) VALUES ($1, $2, $3) RETURNING comment_id, body, user_id, pokemon_id")
+func (c *commentRepo) Create(comment *model.Comment) (*model.CommentPayload, error) {
+	var cmt model.CommentPayload
+	stmt, err := c.Prepare("WITH inserted_comment AS ( INSERT INTO comments (user_id, pokemon_id, body) VALUES ($1, $2, $3) RETURNING * ) SELECT u.username, i.comment_id, i.body, i.pokemon_id FROM inserted_comment i, users u WHERE i.user_id = u.user_id ")
 	if err != nil {
 		return nil, err
 	}
 
 	row := stmt.QueryRow(comment.UserId, comment.PokemonId, comment.Body)
-	err = row.Scan(&cmt.CommentId, &cmt.Body, &cmt.UserId, &cmt.PokemonId)
+	err = row.Scan(&cmt.Username, &cmt.CommentId, &cmt.Body, &cmt.PokemonId)
 	if err != nil {
 		return nil, err
 	}
@@ -65,15 +65,16 @@ func (c *commentRepo) Delete(comment *model.Comment) error {
 	return nil
 }
 
-func (c *commentRepo) GetCommentsById(pokeId uint) ([]*model.Comment, error) {
-	rows, err := c.Query("SELECT comment_id, user_id, pokemon_id, body FROM comments WHERE pokemon_id=$1 ORDER BY created_at DESC;", pokeId)
+func (c *commentRepo) GetCommentsById(pokeId uint) ([]*model.CommentPayload, error) {
+	rows, err := c.Query("SELECT u.username, c.comment_id ,c.body, c.pokemon_id FROM comments c JOIN users u ON c.user_id = u.user_id AND pokemon_id=$1 ORDER BY created_at DESC;", pokeId)
+
 	if err != nil {
 		return nil, err
 	}
-	var comments []*model.Comment
+	var comments []*model.CommentPayload
 	for rows.Next() {
-		var comment model.Comment
-		err = rows.Scan(&comment.CommentId, &comment.UserId, &comment.PokemonId, &comment.Body)
+		var comment model.CommentPayload
+		err = rows.Scan(&comment.Username, &comment.CommentId, &comment.Body, &comment.PokemonId)
 		if err != nil {
 			return nil, err
 		}
