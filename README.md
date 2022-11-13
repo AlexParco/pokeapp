@@ -16,4 +16,8 @@ make migrate_up
 # and change postgres host in config.yml (database -> localhost) 
 ```
 
-
+## POKEAPP
+<div>
+    <img src='./img/pokeapp1.png'>
+    <img src='./img/pokeapp2.png'>
+</div>
