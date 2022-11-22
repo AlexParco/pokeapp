@@ -6,7 +6,6 @@ type Props = {
 }
 
 const CommentList = ({ comments }: Props) => {
-  console.log(comments)
   return (
     <Box >
       {comments.map(comment => (

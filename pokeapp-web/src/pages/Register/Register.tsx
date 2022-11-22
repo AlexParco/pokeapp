@@ -1,16 +1,19 @@
 import { useAuth } from "@/context/auth.context"
 import { Box, Button, Flex, FormControl, FormLabel, Heading, Input } from "@chakra-ui/react"
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 const Register = () => {
   const [username, setUsername] = useState<string>("")
   const [password, setPassword] = useState<string>("")
   const { register } = useAuth()
+  const navegate = useNavigate()
 
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     register({ username, role: 'ROLE_USER', password })
+    navegate("/login")
 
     setUsername("")
     setPassword("")

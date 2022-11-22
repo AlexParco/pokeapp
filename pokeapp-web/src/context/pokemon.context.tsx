@@ -35,8 +35,7 @@ export const PokeProvider = ({ children }: { children: ReactNode, token: String 
         if (token) {
           resp = await getFavPokemons(token)
         }
-        console.log(resp)
-        const resPoke = mapPokemons(data.results, resp)
+        const resPoke = mapPokemons(data.results, resp ? resp : [])
 
         setPokemons(resPoke)
       } catch (error) {

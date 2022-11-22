@@ -11,11 +11,7 @@ export interface UserLogin {
   password: string;
 }
 
-export interface UserRegister {
-  username: string;
-  role: string;
-  password: string;
-}
+export type UserRegister = Omit<User, "user_id">
 
 export interface UserWithToken {
   user: User;

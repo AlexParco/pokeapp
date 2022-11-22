@@ -14,7 +14,6 @@ const Comment = ({ pokeId }: { pokeId: string }) => {
   useEffect(() => {
     getCommentsByPokeId(pokeId)
       .then(comments => {
-        console.log(comments)
         setComments(comments)
       })
       .catch(_ => {

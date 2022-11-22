@@ -1,19 +1,29 @@
 import { useAuth } from "@/context/auth.context"
-import { Box, Button, Flex, FormControl, FormLabel, Heading, Input, Link } from "@chakra-ui/react"
+import { Box, Button, Flex, FormControl, FormLabel, Heading, Input, Link, StatHelpText, Toast, useToast } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import { Link as ReachLink, useNavigate } from "react-router-dom"
 
 const Login = () => {
   const [username, setUsername] = useState<string>("")
   const [password, setPassword] = useState<string>("")
-  const { login, isLogged, token } = useAuth()
+  const { login, isLogged, token, state } = useAuth()
   const navegate = useNavigate()
+  const toast = useToast()
 
   useEffect(() => {
     if (isLogged) {
       navegate("/")
     }
-  }, [token, isLogged])
+    if (state.error) {
+      toast({
+        title: 'Error',
+        description: 'incorrect credentials',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      })
+    }
+  }, [token, isLogged, state])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

@@ -1,6 +1,7 @@
 import { loginService, registerService } from "@/service/api";
+import { State } from "@/types/state.type";
 import { User, UserLogin, UserRegister } from "@/types/user.type";
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useState } from "react";
 
 interface IAuthContext {
   login: ({ username, password }: UserLogin) => void;
@@ -8,6 +9,7 @@ interface IAuthContext {
   logout: () => void;
   isLogged: Boolean;
   token: string;
+  state: State;
 }
 
 const userDefault: User = {
@@ -17,29 +19,33 @@ const userDefault: User = {
   role: "",
 }
 
+const stateDefault: State = { error: false, loading: false, succes: false }
+
 const AuthContext = createContext<IAuthContext>({
   login: () => null,
   logout: () => null,
   register: () => null,
   isLogged: false,
   token: "",
+  state: stateDefault,
 })
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string>(() => window.localStorage.getItem("token") as string)
+  const [state, setState] = useState<State>(stateDefault)
 
   const login = ({ username, password }: UserLogin) => {
-    async function fetchLogin() {
-      try {
-        const data = await loginService({ username, password })
+    setState({ error: false, loading: true, succes: false })
+    loginService({ username, password })
+      .then(data => {
         setToken(data.token)
         window.localStorage.setItem("token", data.token)
 
-      } catch (error) {
-        console.log(error)
-      }
-    }
-    fetchLogin()
+        setState({ error: false, loading: false, succes: true })
+      })
+      .catch(err => {
+        setState({ error: true, loading: false, succes: false })
+      })
   }
 
   const register = ({ username, role, password }: UserRegister) => {
@@ -62,6 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       logout,
       isLogged: Boolean(token),
       token,
+      state,
     }}
   >
     {children}
@@ -69,12 +76,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 }
 
 export const useAuth = () => {
-  const { login, register, logout, isLogged, token } = useContext(AuthContext)
+  const { login, register, logout, isLogged, token, state } = useContext(AuthContext)
   return {
     login,
     register,
     logout,
     isLogged,
     token,
+    state
   }
 } 
